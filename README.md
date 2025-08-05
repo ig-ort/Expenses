@@ -79,7 +79,4 @@ pnpm dev
 └── /docs          → Additional documentation (if any)
 
 📜 License
-MIT License. You are free to use this project for learning or as part of your own portfolio.
-
-
-
+MIT License.
