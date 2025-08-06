@@ -15,7 +15,7 @@ return new class extends Migration
             $table->ulid('method_payment_id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->boolean('isActive');
+            $table->boolean('is_active');
             $table->string('image')->nullable();
             $table->string('icon')->nullable();
             $table->tinyInteger('order');

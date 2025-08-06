@@ -24,7 +24,7 @@ class MethodPayment extends Model
     protected $fillable = [
         'name',
         'description',
-        'isActive',
+        'is_active',
         'image',
         'icon',
         'order',

@@ -17,7 +17,7 @@ class MethodPaymentSeeder extends Seeder
             [
                 'name' => 'Efectivo',
                 'description' => 'Pago en efectivo',
-                'isActive' => '1',
+                'is_active' => '1',
                 'image' => 'cash.png',
                 'icon' => 'cash.png',
                 'order' => '1',
@@ -26,7 +26,7 @@ class MethodPaymentSeeder extends Seeder
             [
                 'name' => 'Transferencia Bancaria',
                 'description' => 'Pago con transferencia bancaria',
-                'isActive' => '1',
+                'is_active' => '1',
                 'image' => 'bank-transfer.png',
                 'icon' => 'bank-transfer.png',
                 'order' => '2',
@@ -35,7 +35,7 @@ class MethodPaymentSeeder extends Seeder
             [
                 'name' => 'Tarjeta de Débito',
                 'description' => 'Pago con tarjeta de débito',
-                'isActive' => '1',
+                'is_active' => '1',
                 'image' => 'credit-card.png',
                 'icon' => 'credit-card.png',
                 'order' => '3',
@@ -44,7 +44,7 @@ class MethodPaymentSeeder extends Seeder
             [
                 'name' => 'Tarjeta de Crédito',
                 'description' => 'Pago con tarjeta de crédito',
-                'isActive' => '1',
+                'is_active' => '1',
                 'image' => 'debit-card.png',
                 'icon' => 'debit-card.png',
                 'order' => '4',
