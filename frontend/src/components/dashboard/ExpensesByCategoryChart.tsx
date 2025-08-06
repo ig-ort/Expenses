@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@src/
 import { Progress } from "@src/components/ui/progress"
 import { ExpenseCategory } from "@/types/domains/expenses/types/expense"
 import { CategoryStats } from "@/types/domains/dashboard/types/statistics"
+import { formatCurrency } from "@/lib/locale-config"
 
 interface ExpensesByCategoryChartProps {
   categoryStats: CategoryStats[]
@@ -34,13 +35,6 @@ const getCategoryColors = () => {
     '#54A0FF', // Bills - Light Blue
     '#5F27CD', // Other - Purple
   ]
-}
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR'
-  }).format(amount)
 }
 
 export function ExpensesByCategoryChart({ categoryStats }: ExpensesByCategoryChartProps) {

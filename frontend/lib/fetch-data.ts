@@ -26,8 +26,9 @@ export const getPaginatedData = async <T>(url: string): Promise<ApiResponse<T>> 
     return response as ApiResponse<T>;
   }
   
-  // Return only the data property for consistency with other methods
-  return { success: true, result: response.result.data };
+  // Para datos paginados, devolver la estructura completa para que las Actions puedan manejar data.data
+  // La estructura del API Laravel es: { success: true, data: { data: [...], total, per_page, etc. } }
+  return { success: true, result: response.result.data as T };
 };
 
 export const saveData = async <T>(url: string, data: T): Promise<ApiResponse<T>> => {

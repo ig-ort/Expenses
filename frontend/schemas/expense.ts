@@ -11,6 +11,11 @@ export const expenseSchema = z.object({
   location: z.string().optional(),
   is_recurring: z.boolean().default(false),
   recurring_frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
+  // Campos adicionales requeridos por la API de Laravel
+  is_installment: z.boolean().default(false),
+  installments_count: z.number().min(1).max(100).optional(),
+  bank_account_id: z.string().optional(),
+  card_id: z.string().optional(),
 });
 
 export type ExpenseFormData = z.infer<typeof expenseSchema>;

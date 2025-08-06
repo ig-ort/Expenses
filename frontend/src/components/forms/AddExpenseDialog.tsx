@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
@@ -22,6 +22,10 @@ import { Separator } from '@src/components/ui/separator'
 import { ExpenseCategory } from '@/types/domains/expenses/types/expense'
 import { CreateExpenseForm } from '@/types/forms'
 import { cn } from '@src/lib/utils'
+import { createExpenseAction } from '@/actions/expense-actions'
+import { getPaymentMethodsAction } from '@/actions/payment-method-actions'
+import { MethodPayment } from '@/types/domains/methodpayment/types/methodpayment'
+import { toast } from 'sonner'
 
 const formSchema = z.object({
   amount: z.string().min(1, 'El monto es requerido'),
@@ -39,7 +43,8 @@ const formSchema = z.object({
 interface AddExpenseDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: CreateExpenseForm) => void
+  onSubmit?: (data: CreateExpenseForm) => void
+  onExpenseAdded?: () => void // Callback para refrescar datos
 }
 
 const getCategoryOptions = () => [
@@ -53,14 +58,6 @@ const getCategoryOptions = () => [
   { value: ExpenseCategory.OTHER, label: 'Otros', icon: '📦' },
 ]
 
-const getPaymentMethodOptions = () => [
-  { value: '1', label: 'Tarjeta de débito', icon: '💳' },
-  { value: '2', label: 'Efectivo', icon: '💵' },
-  { value: '3', label: 'Tarjeta de crédito', icon: '💳' },
-  { value: '4', label: 'Transferencia bancaria', icon: '🏦' },
-  { value: '5', label: 'Billetera digital', icon: '📱' },
-]
-
 const getRecurringOptions = () => [
   { value: 'daily', label: 'Diario' },
   { value: 'weekly', label: 'Semanal' },
@@ -68,8 +65,10 @@ const getRecurringOptions = () => [
   { value: 'yearly', label: 'Anual' },
 ]
 
-export function AddExpenseDialog({ open, onOpenChange, onSubmit }: AddExpenseDialogProps) {
+export function AddExpenseDialog({ open, onOpenChange, onSubmit, onExpenseAdded }: AddExpenseDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<MethodPayment[]>([])
+  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,18 +85,65 @@ export function AddExpenseDialog({ open, onOpenChange, onSubmit }: AddExpenseDia
 
   const isRecurring = form.watch('is_recurring')
 
+  // Cargar métodos de pago al abrir el modal
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        setIsLoadingPaymentMethods(true)
+        const result = await getPaymentMethodsAction()
+        if (result.success && result.data) {
+          setPaymentMethods(result.data)
+        } else {
+          console.error('Error al cargar métodos de pago:', result.error)
+          toast.error(result.error || 'Error al cargar métodos de pago')
+        }
+      } catch (error) {
+        console.error('Error al cargar métodos de pago:', error)
+        toast.error('Error al cargar métodos de pago')
+      } finally {
+        setIsLoadingPaymentMethods(false)
+      }
+    }
+
+    if (open) {
+      loadPaymentMethods()
+    }
+  }, [open])
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
     try {
       const formData = {
         ...values,
         tags: [], // Por ahora vacío
+        // Agregar campos requeridos por la API de Laravel
+        is_installment: false,
+        installments_count: undefined,
+        bank_account_id: undefined,
+        card_id: undefined,
       } as CreateExpenseForm
-      await onSubmit(formData)
+
+      if (onSubmit) {
+        // Si se proporciona onSubmit personalizado, usarlo
+        await onSubmit(formData)
+      } else {
+        // Usar Server Action directamente
+        const result = await createExpenseAction(formData)
+        if (result.success) {
+          toast.success(result.message || 'Gasto añadido correctamente')
+          if (onExpenseAdded) {
+            onExpenseAdded()
+          }
+        } else {
+          throw new Error(result.error || 'Error en la respuesta de la API')
+        }
+      }
+
       form.reset()
       onOpenChange(false)
     } catch (error) {
       console.error('Error al crear gasto:', error)
+      toast.error(error instanceof Error ? error.message : 'Error al añadir el gasto')
     } finally {
       setIsLoading(false)
     }
@@ -124,12 +170,12 @@ export function AddExpenseDialog({ open, onOpenChange, onSubmit }: AddExpenseDia
                   <FormLabel>Monto *</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                       <Input
                         {...field}
                         type="number"
                         step="0.01"
-                        placeholder="25.50"
+                        placeholder="350.00"
                         className="pl-8"
                       />
                     </div>
@@ -239,18 +285,26 @@ export function AddExpenseDialog({ open, onOpenChange, onSubmit }: AddExpenseDia
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona método" />
+                          <SelectValue placeholder={isLoadingPaymentMethods ? "Cargando..." : "Selecciona método"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {getPaymentMethodOptions().map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            <div className="flex items-center space-x-2">
-                              <span>{option.icon}</span>
-                              <span>{option.label}</span>
-                            </div>
+                        {isLoadingPaymentMethods ? (
+                          <SelectItem value="loading" disabled>
+                            Cargando métodos de pago...
                           </SelectItem>
-                        ))}
+                        ) : (
+                          paymentMethods
+                            .filter(method => method.is_active === 1 || method.is_active === true)
+                            .map((method) => (
+                              <SelectItem key={method.method_payment_id} value={method.method_payment_id}>
+                                <div className="flex items-center space-x-2">
+                                  <span>{method.icon || '💳'}</span>
+                                  <span>{method.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />

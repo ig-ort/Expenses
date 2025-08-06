@@ -8,7 +8,7 @@ import qs from "qs";
 import { getPaginatedData, saveData, updateData } from "@/lib/fetch-data";
 import { getData } from "@/lib/data-fetching";
 
-const collectionRoute = "method-payments";
+const collectionRoute = "method-payments"; // Revertido para coincidir con la API del backend
 const mutationRoute = "method-payment";
 
 const formApiQuery = (searchParams: SearchParams) => {

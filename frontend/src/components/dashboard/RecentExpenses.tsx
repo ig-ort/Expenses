@@ -7,19 +7,13 @@ import { Calendar, Eye, Edit, Trash2 } from "lucide-react"
 import { Expense, ExpenseCategory } from "@/types/domains/expenses/types/expense"
 import { formatDistance } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { formatCurrency } from "@/lib/locale-config"
 
 interface RecentExpensesProps {
   expenses: Expense[]
   onViewExpense?: (expense: Expense) => void
   onEditExpense?: (expense: Expense) => void
   onDeleteExpense?: (expense: Expense) => void
-}
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR'
-  }).format(amount)
 }
 
 const getCategoryIcon = (category: ExpenseCategory) => {
@@ -100,50 +94,54 @@ export function RecentExpenses({
           {expenses.map((expense) => (
             <div
               key={expense.expense_id}
-              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors space-y-3 sm:space-y-0"
             >
-              <div className="flex items-center space-x-4">
-                <div className="text-2xl">
+              {/* Contenido principal */}
+              <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                <div className="text-xl sm:text-2xl flex-shrink-0">
                   {getCategoryIcon(expense.category)}
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <p className="font-medium leading-none">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                    <p className="font-medium leading-none truncate">
                       {expense.description || getCategoryLabel(expense.category)}
                     </p>
                     <Badge 
                       variant="secondary" 
-                      className={getCategoryColor(expense.category)}
+                      className={`${getCategoryColor(expense.category)} text-xs mt-1 sm:mt-0 self-start sm:self-auto`}
                     >
                       {getCategoryLabel(expense.category)}
                     </Badge>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>
-                      {formatDistance(new Date(expense.expense_date), new Date(), {
-                        addSuffix: true,
-                        locale: es
-                      })}
-                    </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 text-xs sm:text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">
+                        {formatDistance(new Date(expense.expense_date), new Date(), {
+                          addSuffix: true,
+                          locale: es
+                        })}
+                      </span>
+                    </div>
                     {expense.method_payment_name && (
-                      <>
-                        <span>•</span>
-                        <span>{expense.method_payment_name}</span>
-                      </>
+                      <div className="flex items-center space-x-1 sm:ml-2">
+                        <span className="hidden sm:inline">•</span>
+                        <span className="truncate">{expense.method_payment_name}</span>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <div className="text-right">
-                  <p className="font-bold text-lg">
+              {/* Monto y acciones */}
+              <div className="flex items-center justify-between sm:justify-end sm:space-x-2">
+                <div className="text-left sm:text-right">
+                  <p className="font-bold text-lg sm:text-xl">
                     {formatCurrency(expense.amount)}
                   </p>
                 </div>
                 
-                <div className="flex space-x-1 ml-4">
+                <div className="flex space-x-1">
                   {onViewExpense && (
                     <Button
                       variant="ghost"

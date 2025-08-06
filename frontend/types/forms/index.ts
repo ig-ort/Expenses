@@ -13,6 +13,11 @@ export interface CreateExpenseForm {
   location?: string;
   is_recurring?: boolean;
   recurring_frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  // Campos adicionales requeridos por la API de Laravel
+  is_installment?: boolean;
+  installments_count?: number;
+  bank_account_id?: string;
+  card_id?: string;
 }
 
 export interface EditExpenseForm extends CreateExpenseForm {

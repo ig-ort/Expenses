@@ -5,6 +5,7 @@ import { Badge } from "@src/components/ui/badge"
 import { Button } from "@src/components/ui/button"
 import { CalendarDays, DollarSign, PlusCircle, TrendingDown, TrendingUp } from "lucide-react"
 import { ExpenseCategory } from "@/types/domains/expenses/types/expense"
+import { formatCurrency } from "@/lib/locale-config"
 
 interface DashboardStatsProps {
   totalExpenses: number
@@ -13,13 +14,6 @@ interface DashboardStatsProps {
   previousMonthAmount: number
   monthlyChangePercentage: number
   averageDailyExpense: number
-}
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR'
-  }).format(amount)
 }
 
 const getCategoryIcon = (category: ExpenseCategory) => {

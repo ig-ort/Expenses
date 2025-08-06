@@ -14,12 +14,14 @@ export enum PaymentMethodType {
 export interface MethodPayment extends BaseEntity {
   method_payment_id: string;
   name: string;
-  type: PaymentMethodType;
+  type?: PaymentMethodType; // Opcional ya que el backend no lo envía actualmente
   description?: string;
-  is_active: boolean;
+  is_active?: number | boolean; // Alias para compatibilidad
   icon?: string;
+  image?: string; // El backend también envía image
   color?: string;
   order?: number;
+  payment_logic_id?: number; // Campo adicional del backend
 }
 
 
